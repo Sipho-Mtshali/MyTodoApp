@@ -1,2 +1,214 @@
-// For information on how to create your own theme, please see:
+// Ionic Variables and theming. For more info, please see:
 // http://ionicframework.com/docs/theming/
+
+/** Premium TaskFlow Theme Colors **/
+:root {
+  /** Primary Brand Colors **/
+  --ion-color-primary: #667eea;
+  --ion-color-primary-rgb: 102, 126, 234;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #5a6fce;
+  --ion-color-primary-tint: #758bec;
+
+  /** Secondary Brand Colors **/
+  --ion-color-secondary: #764ba2;
+  --ion-color-secondary-rgb: 118, 75, 162;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #68428f;
+  --ion-color-secondary-tint: #8459ab;
+
+  /** Tertiary Accent Colors **/
+  --ion-color-tertiary: #ff6b6b;
+  --ion-color-tertiary-rgb: 255, 107, 107;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: #e05e5e;
+  --ion-color-tertiary-tint: #ff7a7a;
+
+  /** Success Colors **/
+  --ion-color-success: #48dbfb;
+  --ion-color-success-rgb: 72, 219, 251;
+  --ion-color-success-contrast: #000000;
+  --ion-color-success-contrast-rgb: 0, 0, 0;
+  --ion-color-success-shade: #40c1dd;
+  --ion-color-success-tint: #5adffc;
+
+  /** Warning Colors **/
+  --ion-color-warning: #feca57;
+  --ion-color-warning-rgb: 254, 202, 87;
+  --ion-color-warning-contrast: #000000;
+  --ion-color-warning-contrast-rgb: 0, 0, 0;
+  --ion-color-warning-shade: #e0b24d;
+  --ion-color-warning-tint: #fed168;
+
+  /** Danger Colors **/
+  --ion-color-danger: #ff4757;
+  --ion-color-danger-rgb: 255, 71, 87;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #e03e4d;
+  --ion-color-danger-tint: #ff5868;
+
+  /** Dark Colors **/
+  --ion-color-dark: #2c3e50;
+  --ion-color-dark-rgb: 44, 62, 80;
+  --ion-color-dark-contrast: #ffffff;
+  --ion-color-dark-contrast-rgb: 255, 255, 255;
+  --ion-color-dark-shade: #273746;
+  --ion-color-dark-tint: #414f62;
+
+  /** Medium Colors **/
+  --ion-color-medium: #95a5a6;
+  --ion-color-medium-rgb: 149, 165, 166;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-contrast-rgb: 255, 255, 255;
+  --ion-color-medium-shade: #839192;
+  --ion-color-medium-tint: #a0afb0;
+
+  /** Light Colors **/
+  --ion-color-light: #ecf0f1;
+  --ion-color-light-rgb: 236, 240, 241;
+  --ion-color-light-contrast: #000000;
+  --ion-color-light-contrast-rgb: 0, 0, 0;
+  --ion-color-light-shade: #d0d4d4;
+  --ion-color-light-tint: #eef2f3;
+
+  /** Custom Premium Colors **/
+  --ion-color-premium: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --ion-color-premium-light: linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+  
+  /** Background Colors **/
+  --ion-background-color: #ffffff;
+  --ion-background-color-rgb: 255, 255, 255;
+  
+  /** Text Colors **/
+  --ion-text-color: #2c3e50;
+  --ion-text-color-rgb: 44, 62, 80;
+  
+  /** Custom Properties for Premium Effects **/
+  --premium-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  --premium-shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.15);
+  --premium-backdrop-blur: blur(20px);
+  --premium-border-radius: 20px;
+  --premium-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/** Dark Theme Overrides **/
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ion-background-color: #1a1a2e;
+    --ion-background-color-rgb: 26, 26, 46;
+    
+    --ion-text-color: #ffffff;
+    --ion-text-color-rgb: 255, 255, 255;
+    
+    --ion-color-step-50: #16213e;
+    --ion-color-step-100: #0f3460;
+    --ion-color-step-150: #1e2954;
+    --ion-color-step-200: #16213e;
+    --ion-color-step-250: #0f3460;
+    --ion-color-step-300: #1e2954;
+    --ion-color-step-350: #16213e;
+    --ion-color-step-400: #0f3460;
+    --ion-color-step-450: #1e2954;
+    --ion-color-step-500: #16213e;
+    --ion-color-step-550: #0f3460;
+    --ion-color-step-600: #1e2954;
+    --ion-color-step-650: #16213e;
+    --ion-color-step-700: #0f3460;
+    --ion-color-step-750: #1e2954;
+    --ion-color-step-800: #16213e;
+    --ion-color-step-850: #0f3460;
+    --ion-color-step-900: #1e2954;
+    --ion-color-step-950: #16213e;
+  }
+}
+
+/** iOS Variables **/
+.ios {
+  --ion-background-color: #f5f5f5;
+  --ion-background-color-rgb: 245, 245, 245;
+  
+  --ion-text-color: #2c3e50;
+  --ion-text-color-rgb: 44, 62, 80;
+  
+  --ion-toolbar-background: var(--ion-color-premium-light);
+  --ion-toolbar-color: #ffffff;
+  
+  --ion-item-background: rgba(255, 255, 255, 0.9);
+  --ion-item-color: var(--ion-text-color);
+  
+  --ion-button-background: var(--ion-color-primary);
+  --ion-button-color: #ffffff;
+  
+  --ion-card-background: rgba(255, 255, 255, 0.95);
+  --ion-card-color: var(--ion-text-color);
+}
+
+/** Material Design Variables **/
+.md {
+  --ion-background-color: #fafafa;
+  --ion-background-color-rgb: 250, 250, 250;
+  
+  --ion-text-color: #2c3e50;
+  --ion-text-color-rgb: 44, 62, 80;
+  
+  --ion-toolbar-background: var(--ion-color-premium);
+  --ion-toolbar-color: #ffffff;
+  
+  --ion-item-background: rgba(255, 255, 255, 0.9);
+  --ion-item-color: var(--ion-text-color);
+}
+
+/** Custom Font Import **/
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/** Global Font Settings **/
+:root {
+  --ion-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/** Additional Premium Styling Variables **/
+:root {
+  /** Glass Morphism Effects **/
+  --glass-background: rgba(255, 255, 255, 0.1);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.2);
+  --glass-backdrop: blur(20px);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  
+  /** Gradient Definitions **/
+  --gradient-primary: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-secondary) 100%);
+  --gradient-success: linear-gradient(135deg, var(--ion-color-success) 0%, #00d2ff 100%);
+  --gradient-warning: linear-gradient(135deg, var(--ion-color-warning) 0%, #ff9a9e 100%);
+  --gradient-danger: linear-gradient(135deg, var(--ion-color-danger) 0%, #ff6b7a 100%);
+  
+  /** Animation Timing **/
+  --animation-fast: 0.2s;
+  --animation-normal: 0.3s;
+  --animation-slow: 0.6s;
+  --animation-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --animation-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /** Spacing Scale **/
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  
+  /** Border Radius Scale **/
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 50px;
+}
+
+/** Responsive Breakpoints **/
+@custom-media --mobile (max-width: 480px);
+@custom-media --tablet (min-width: 481px) and (max-width: 768px);
+@custom-media --desktop (min-width: 769px);
