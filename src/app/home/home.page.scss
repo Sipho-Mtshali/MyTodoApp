@@ -1,4 +1,185 @@
-// Premium To-Do App Styles
+// Enhanced Add Task Section
+.add-task-section {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  position: relative;
+  z-index: 2;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.expanded {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(25px);
+  }
+}
+
+.quick-add {
+  padding: 20px;
+}
+
+.quick-add-button {
+  --background: rgba(255, 255, 255, 0.2);
+  --color: white;
+  --border-radius: 25px;
+  --box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+  height: 55px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
+  &:hover {
+    --background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+  }
+}
+
+.add-task-form {
+  padding: 30px 20px;
+  animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-item {
+  --background: rgba(255, 255, 255, 0.9);
+  --border-radius: 20px;
+  --padding-start: 20px;
+  --padding-end: 20px;
+  --inner-padding-top: 15px;
+  --inner-padding-bottom: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
+  &.half-width {
+    flex: 1;
+    margin-right: 10px;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+
+  &.item-has-focus {
+    --border-color: var(--ion-color-primary);
+    --border-width: 2px;
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(var(--ion-color-primary-rgb), 0.3);
+  }
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.task-input, .task-textarea {
+  --color: #333;
+  font-size: 1rem;
+}
+
+.priority-select {
+  ion-select {
+    --placeholder-color: #666;
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 25px;
+
+  ion-button:first-child {
+    flex: 0 0 auto;
+    --color: #666;
+  }
+
+  .add-button {
+    flex: 1;
+    --background: linear-gradient(135deg, #667eea, #764ba2);
+    --color: white;
+    --border-radius: 25px;
+    --box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    height: 50px;
+    font-weight: 600;
+
+    &:hover:not([disabled]) {
+      transform: translateY(-2px);
+      --box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+    }
+
+    &[disabled] {
+      --background: #ccc;
+      --box-shadow: none;
+    }
+  }
+}
+
+// Category Filter
+.category-filter {
+  padding: 15px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(15px);
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  ion-chip {
+    --background: rgba(255, 255, 255, 0.2);
+    --color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+
+    &.active {
+      --background: var(--chip-color, var(--ion-color-primary));
+      --color: white;
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    &.clear-filter {
+      --background: rgba(255, 71, 87, 0.8);
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+
+    ion-icon {
+      margin-right: 5px;
+    }
+  }
+}
+
+// Search Bar
+.search-container {
+  padding: 15px 20px 0;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(15px);
+}
+
+.custom-searchbar {
+  --background: rgba(255, 255, 255, 0.9);
+  --color: #333;
+  --placeholder-color: #999;
+  --icon-color: #666;
+  --border-radius: 25px;
+  --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
+  &.searchbar-has-focus {
+    --border-color: var(--ion-color-primary);
+    --border-width: // Premium To-Do App Styles
 :host {
   --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
@@ -464,6 +645,10 @@
   }
   100% { 
     --border-width: 2px; 
+    transform: scale(1.02);
+  }
+}
+    2px;
     transform: scale(1.02);
   }
 }

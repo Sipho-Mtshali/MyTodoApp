@@ -2,109 +2,721 @@
   <ion-toolbar class="custom-toolbar">
     <ion-title class="custom-title">
       <div class="header-content">
-        <h1>✨ TaskFlow</h1>
-        <p>Your premium task companion</p>
+        <h1>✨ TaskFlow Pro</h1>
+        <p>Your ultimate productivity companion</p>
       </div>
     </ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="openFilterModal()">
+        <ion-icon name="filter" color="light"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" (click)="openStatsModal()">
+        <ion-icon name="analytics" color="light"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" (click)="openSettingsModal()">
+        <ion-icon name="settings" color="light"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="main-content">
   <div class="floating-particles" #particles></div>
 
-  <!-- Stats Section -->
+  <!-- Enhanced Stats Section with More Insights -->
   <div class="stats-container">
     <div class="stats-grid">
       <div class="stat-card" [class.animate]="statsAnimating">
-        <div class="stat-number">{{ totalTasks }}</div>
+        <div class="stat-number">{{ taskStats.total }}</div>
         <div class="stat-label">Total</div>
+        <div class="stat-trend" *ngIf="taskStats.total > 0">
+          <ion-icon name="trending-up" color="success"></ion-icon>
+        </div>
       </div>
-      <div class="stat-card" [class.animate]="statsAnimating">
-        <div class="stat-number">{{ completedTasks }}</div>
-        <div class="stat-label">Done</div>
+      <div class="stat-card completed" [class.animate]="statsAnimating">
+        <div class="stat-number">{{ taskStats.completed }}</div>
+        <div class="stat-label">Completed</div>
+        <div class="stat-sublabel">{{ getCompletionRate() }}%</div>
       </div>
-      <div class="stat-card" [class.animate]="statsAnimating">
-        <div class="stat-number">{{ pendingTasks }}</div>
+      <div class="stat-card pending" [class.animate]="statsAnimating">
+        <div class="stat-number">{{ taskStats.pending }}</div>
         <div class="stat-label">Pending</div>
+        <div class="stat-sublabel">{{ taskStats.completedToday }} today</div>
+      </div>
+      <div class="stat-card overdue" [class.animate]="statsAnimating" *ngIf="taskStats.overdue > 0">
+        <div class="stat-number">{{ taskStats.overdue }}</div>
+        <div class="stat-label">Overdue</div>
+        <div class="stat-sublabel">Needs attention!</div>
+      </div>
+    </div>
+    
+    <!-- Enhanced Productivity Score with Weekly Streak -->
+    <div class="productivity-metrics" *ngIf="taskStats.total > 0">
+      <div class="score-circle">
+        <div class="score-number">{{ taskStats.productivityScore }}%</div>
+        <div class="score-label">Productivity Score</div>
+      </div>
+      
+      <div class="weekly-streak">
+        <div class="streak-number">{{ getWeeklyStreak() }}</div>
+        <div class="streak-label">Day Streak</div>
+        <ion-icon name="flame" color="warning"></ion-icon>
+      </div>
+      
+      <div class="avg-time" *ngIf="taskStats.avgCompletionTime > 0">
+        <div class="time-number">{{ taskStats.avgCompletionTime }}m</div>
+        <div class="time-label">Avg. Time</div>
+        <ion-icon name="time" color="medium"></ion-icon>
+      </div>
+    </div>
+
+    <!-- Quick Insights -->
+    <div class="quick-insights" *ngIf="taskStats.total > 0">
+      <div class="insight-item" *ngIf="getMostProductiveCategory()">
+        <ion-icon name="trophy" color="warning"></ion-icon>
+        <span>Most productive in <strong>{{ getMostProductiveCategory() }}</strong></span>
+      </div>
+      <div class="insight-item" *ngIf="taskStats.completedThisWeek > taskStats.completedToday">
+        <ion-icon name="trending-up" color="success"></ion-icon>
+        <span>{{ taskStats.completedThisWeek }} tasks completed this week</span>
       </div>
     </div>
   </div>
 
-  <!-- Add Task Section -->
-  <div class="add-task-section">
-    <div class="input-container">
-      <ion-item class="task-input-item" lines="none">
+  <!-- Enhanced Category Filter with Task Counts -->
+  <div class="category-filter" *ngIf="categories.length > 0">
+    <div class="filter-header">
+      <h3>Categories</h3>
+      <ion-button fill="clear" size="small" (click)="manageCategoriesModal()">
+        <ion-icon name="settings-outline"></ion-icon>
+      </ion-button>
+    </div>
+    <div class="category-chips">
+      <ion-chip 
+        *ngFor="let category of categories" 
+        [class.active]="selectedCategory === category.id"
+        (click)="filterByCategory(category.id)"
+        [style.--chip-color]="category.color"
+        class="category-chip-enhanced">
+        <ion-icon [name]="category.icon"></ion-icon>
+        <ion-label>{{ category.name }}</ion-label>
+        <ion-badge color="light">{{ category.taskCount }}</ion-badge>
+      </ion-chip>
+      <ion-chip 
+        [class.active]="selectedCategory === null"
+        (click)="clearCategoryFilter()"
+        class="clear-filter">
+        <ion-icon name="apps"></ion-icon>
+        <ion-label>All Tasks</ion-label>
+        <ion-badge color="light">{{ taskStats.total }}</ion-badge>
+      </ion-chip>
+    </div>
+  </div>
+
+  <!-- Enhanced Search Bar with Filters -->
+  <div class="search-container">
+    <div class="search-row">
+      <ion-searchbar 
+        [(ngModel)]="searchQuery"
+        (ionInput)="onSearchInput($event)"
+        placeholder="Search tasks, descriptions, categories..."
+        show-clear-button="focus"
+        class="custom-searchbar">
+      </ion-searchbar>
+      <ion-button fill="clear" (click)="toggleAdvancedFilters()">
+        <ion-icon name="options" [color]="showAdvancedFilters ? 'primary' : 'medium'"></ion-icon>
+      </ion-button>
+    </div>
+    
+    <!-- Advanced Filters -->
+    <div class="advanced-filters" *ngIf="showAdvancedFilters" [@slideIn]>
+      <div class="filter-row">
+        <ion-segment [(ngModel)]="currentFilter.sortBy" (ionChange)="onFilterChange()">
+          <ion-segment-button value="date">
+            <ion-label>Date</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="priority">
+            <ion-label>Priority</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="dueDate">
+            <ion-label>Due Date</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="alphabetical">
+            <ion-label>A-Z</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+      
+      <div class="filter-row">
+        <ion-item lines="none">
+          <ion-checkbox [(ngModel)]="currentFilter.showCompleted" (ionChange)="onFilterChange()"></ion-checkbox>
+          <ion-label class="ion-margin-start">Show completed tasks</ion-label>
+        </ion-item>
+        
+        <ion-item lines="none">
+          <ion-checkbox [(ngModel)]="currentFilter.showOverdueOnly" (ionChange)="onFilterChange()"></ion-checkbox>
+          <ion-label class="ion-margin-start">Overdue only</ion-label>
+        </ion-item>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Add Task Section with Templates -->
+  <div class="add-task-section" [class.expanded]="showAddTaskForm">
+    <div class="quick-add" *ngIf="!showAddTaskForm">
+      <ion-button 
+        expand="block" 
+        fill="clear" 
+        class="quick-add-button"
+        (click)="toggleAddTaskForm()">
+        <ion-icon name="add" slot="start"></ion-icon>
+        Add New Task
+      </ion-button>
+      
+      <!-- Quick Task Templates -->
+      <div class="task-templates">
+        <ion-chip 
+          *ngFor="let template of quickTemplates" 
+          (click)="createFromTemplate(template)"
+          class="template-chip">
+          <ion-icon [name]="template.icon" [color]="template.color"></ion-icon>
+          <ion-label>{{ template.name }}</ion-label>
+        </ion-chip>
+      </div>
+    </div>
+
+    <form *ngIf="showAddTaskForm" class="add-task-form" [@slideIn]>
+      <!-- Enhanced Task Title with Character Counter -->
+      <ion-item class="form-item" lines="none">
         <ion-input 
-          [(ngModel)]="newTaskText" 
+          [(ngModel)]="newTask.title" 
+          name="title"
           placeholder="What needs to be done?"
-          (keyup.enter)="addTask()"
           class="task-input"
-          [class.success-border]="showSuccessBorder">
+          maxlength="100"
+          counter="true"
+          required>
         </ion-input>
       </ion-item>
-      <ion-button 
-        (click)="addTask()" 
-        class="add-button"
-        expand="block"
-        fill="clear">
+
+      <!-- Enhanced Task Description with Rich Text Support -->
+      <ion-item class="form-item description-item" lines="none">
+        <ion-textarea 
+          [(ngModel)]="newTask.description"
+          name="description" 
+          placeholder="Add detailed description, notes, or instructions..."
+          rows="4"
+          maxlength="500"
+          counter="true"
+          class="task-textarea">
+        </ion-textarea>
+      </ion-item>
+
+      <!-- Enhanced Category & Priority Row with Visual Indicators -->
+      <div class="form-row">
+        <ion-item class="form-item half-width" lines="none">
+          <ion-select 
+            [(ngModel)]="newTask.category"
+            name="category"
+            placeholder="Select Category"
+            interface="popover"
+            class="category-select">
+            <ion-select-option *ngFor="let category of categories" [value]="category.id">
+              <div class="category-option">
+                <ion-icon [name]="category.icon" [style.color]="category.color"></ion-icon>
+                {{ category.name }}
+              </div>
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item class="form-item half-width priority-select" lines="none">
+          <ion-select 
+            [(ngModel)]="newTask.priority"
+            name="priority"
+            placeholder="Priority Level"
+            interface="popover">
+            <ion-select-option value="high">
+              <div class="priority-option high">🔴 High Priority</div>
+            </ion-select-option>
+            <ion-select-option value="medium">
+              <div class="priority-option medium">🟡 Medium Priority</div>
+            </ion-select-option>
+            <ion-select-option value="low">
+              <div class="priority-option low">🟢 Low Priority</div>
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <!-- Enhanced Due Date & Time with Better UX -->
+      <div class="form-row">
+        <ion-item class="form-item half-width" lines="none">
+          <ion-label position="stacked">Due Date</ion-label>
+          <ion-datetime-button datetime="dueDate" class="datetime-button"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime 
+                id="dueDate"
+                [(ngModel)]="newTask.dueDate"
+                name="dueDate"
+                presentation="date"
+                [min]="today"
+                [showDefaultButtons]="true"
+                (ionChange)="onDueDateChange()">
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+
+        <ion-item class="form-item half-width" lines="none" *ngIf="newTask.dueDate">
+          <ion-label position="stacked">Due Time</ion-label>
+          <ion-datetime-button datetime="dueTime" class="datetime-button"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime 
+                id="dueTime"
+                [(ngModel)]="newTask.dueTime"
+                name="dueTime"
+                presentation="time"
+                [showDefaultButtons]="true">
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+      </div>
+
+      <!-- Enhanced Estimated Time & Reminder with Better Controls -->
+      <div class="form-row">
+        <ion-item class="form-item half-width" lines="none">
+          <ion-label position="stacked">Estimated Time</ion-label>
+          <div class="time-input-container">
+            <ion-input 
+              [(ngModel)]="newTask.estimatedTime"
+              name="estimatedTime"
+              type="number"
+              placeholder="0"
+              min="5"
+              max="480"
+              step="15">
+            </ion-input>
+            <ion-label>minutes</ion-label>
+          </div>
+        </ion-item>
+
+        <ion-item class="form-item half-width reminder-item" lines="none">
+          <ion-checkbox 
+            [(ngModel)]="newTask.reminderSet"
+            name="reminderSet"
+            (ionChange)="onReminderToggle()">
+          </ion-checkbox>
+          <ion-label>
+            <div class="reminder-label">
+              <span>Set Reminder</span>
+              <small *ngIf="newTask.reminderSet && newTask.dueDate">
+                {{ getReminderText() }}
+              </small>
+            </div>
+          </ion-label>
+        </ion-item>
+      </div>
+
+      <!-- Subtasks Section -->
+      <div class="subtasks-section" *ngIf="showSubtasks">
+        <div class="subtasks-header">
+          <ion-label>Subtasks</ion-label>
+          <ion-button fill="clear" size="small" (click)="addSubtask()">
+            <ion-icon name="add"></ion-icon>
+          </ion-button>
+        </div>
+        
+        <div class="subtask-list">
+          <ion-item *ngFor="let subtask of newTask.subtasks; let i = index" lines="none" class="subtask-item">
+            <ion-input 
+              [(ngModel)]="subtask.title"
+              [name]="'subtask-' + i"
+              placeholder="Subtask description...">
+            </ion-input>
+            <ion-button fill="clear" slot="end" (click)="removeSubtask(i)">
+              <ion-icon name="close" color="danger"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </div>
+      </div>
+
+      <!-- Action Buttons with Enhanced Options -->
+      <div class="form-actions">
+        <div class="secondary-actions">
+          <ion-button fill="clear" size="small" (click)="toggleSubtasks()">
+            <ion-icon name="list" slot="start"></ion-icon>
+            {{ showSubtasks ? 'Hide' : 'Add' }} Subtasks
+          </ion-button>
+          
+          <ion-button fill="clear" size="small" (click)="saveAsTemplate()" *ngIf="newTask.title">
+            <ion-icon name="bookmark" slot="start"></ion-icon>
+            Save as Template
+          </ion-button>
+        </div>
+        
+        <div class="primary-actions">
+          <ion-button 
+            fill="clear" 
+            color="medium"
+            (click)="cancelAddTask()">
+            Cancel
+          </ion-button>
+          <ion-button 
+            expand="block" 
+            class="add-button"
+            [disabled]="!newTask.title?.trim()"
+            (click)="addTask()">
+            <ion-icon name="checkmark" slot="start"></ion-icon>
+            {{ editingTask ? 'Update Task' : 'Create Task' }}
+          </ion-button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Enhanced Tasks List with Improved Organization -->
+  <div class="tasks-section">
+    <!-- Enhanced Empty State -->
+    <div *ngIf="filteredTasks.length === 0 && tasks.length === 0" class="empty-state">
+      <div class="empty-animation">
+        <ion-icon name="checkmark-circle-outline" class="empty-icon"></ion-icon>
+        <div class="empty-particles"></div>
+      </div>
+      <h3>🚀 Ready to be productive?</h3>
+      <p>Create your first task and start achieving your goals!</p>
+      <ion-button fill="outline" (click)="toggleAddTaskForm()">
         <ion-icon name="add" slot="start"></ion-icon>
-        Add Task
+        Get Started
+      </ion-button>
+    </div>
+
+    <!-- No Results State -->
+    <div *ngIf="filteredTasks.length === 0 && tasks.length > 0" class="empty-state">
+      <ion-icon name="search" class="empty-icon"></ion-icon>
+      <h3>No tasks found</h3>
+      <p>Try adjusting your filters or search query.</p>
+      <ion-button fill="clear" (click)="clearAllFilters()">
+        <ion-icon name="refresh" slot="start"></ion-icon>
+        Clear Filters
+      </ion-button>
+    </div>
+
+    <!-- Task Groups -->
+    <div class="tasks-list" *ngIf="filteredTasks.length > 0">
+      <!-- Overdue Tasks Group -->
+      <div class="task-group" *ngIf="getOverdueTasks().length > 0">
+        <div class="group-header overdue">
+          <ion-icon name="warning" color="danger"></ion-icon>
+          <h4>Overdue Tasks ({{ getOverdueTasks().length }})</h4>
+        </div>
+        <div class="task-items">
+          <div 
+            *ngFor="let task of getOverdueTasks(); trackBy: trackByTaskId" 
+            class="task-item overdue-task"
+            [class.completed]="task.completed"
+            [class.high-priority]="task.priority === 'high'"
+            [class.task-enter]="task.isNew"
+            [class.task-exit]="task.isDeleting">
+            
+            <ng-container *ngTemplateOutlet="taskTemplate; context: { task: task }"></ng-container>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Tasks Group -->
+      <div class="task-group" *ngIf="getTodayTasks().length > 0">
+        <div class="group-header today">
+          <ion-icon name="today" color="primary"></ion-icon>
+          <h4>Due Today ({{ getTodayTasks().length }})</h4>
+        </div>
+        <div class="task-items">
+          <div 
+            *ngFor="let task of getTodayTasks(); trackBy: trackByTaskId" 
+            class="task-item today-task"
+            [class.completed]="task.completed"
+            [class.high-priority]="task.priority === 'high'"
+            [class.task-enter]="task.isNew"
+            [class.task-exit]="task.isDeleting">
+            
+            <ng-container *ngTemplateOutlet="taskTemplate; context: { task: task }"></ng-container>
+          </div>
+        </div>
+      </div>
+
+      <!-- Regular Tasks Group -->
+      <div class="task-group">
+        <div class="group-header" *ngIf="getRegularTasks().length > 0">
+          <ion-icon name="list" color="medium"></ion-icon>
+          <h4>{{ selectedCategory ? 'Filtered Tasks' : 'All Tasks' }} ({{ getRegularTasks().length }})</h4>
+          
+          <!-- Bulk Actions -->
+          <div class="bulk-actions" *ngIf="selectedTasks.length > 0">
+            <ion-button size="small" fill="clear" (click)="bulkComplete()">
+              <ion-icon name="checkmark-done"></ion-icon>
+            </ion-button>
+            <ion-button size="small" fill="clear" (click)="bulkDelete()">
+              <ion-icon name="trash" color="danger"></ion-icon>
+            </ion-button>
+            <ion-button size="small" fill="clear" (click)="clearSelection()">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+        
+        <div class="task-items">
+          <div 
+            *ngFor="let task of getRegularTasks(); trackBy: trackByTaskId" 
+            class="task-item"
+            [class.completed]="task.completed"
+            [class.overdue]="isOverdue(task)"
+            [class.high-priority]="task.priority === 'high'"
+            [class.task-enter]="task.isNew"
+            [class.task-exit]="task.isDeleting"
+            [class.selected]="isTaskSelected(task)">
+            
+            <ng-container *ngTemplateOutlet="taskTemplate; context: { task: task }"></ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Template -->
+  <ng-template #taskTemplate let-task="task">
+    <!-- Priority Indicator with Enhanced Visual -->
+    <div class="priority-indicator" [attr.data-priority]="task.priority">
+      <div class="priority-dot"></div>
+    </div>
+
+    <!-- Enhanced Checkbox with Animation -->
+    <div class="task-checkbox-container">
+      <div 
+        class="task-checkbox"
+        [class.checked]="task.completed"
+        (click)="toggleTask(task)"
+        (touchstart)="onTaskTouchStart($event, task)">
+        <div class="checkbox-inner">
+          <ion-icon 
+            name="checkmark" 
+            *ngIf="task.completed"
+            class="check-icon">
+          </ion-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- Selection Checkbox for Bulk Operations -->
+    <div class="selection-checkbox" *ngIf="bulkSelectionMode">
+      <ion-checkbox 
+        [checked]="isTaskSelected(task)"
+        (ionChange)="toggleTaskSelection(task)">
+      </ion-checkbox>
+    </div>
+
+    <!-- Enhanced Task Content -->
+    <div class="task-content" (click)="openTaskDetail(task)" (press)="enableBulkSelection()">
+      <div class="task-header">
+        <div class="task-title" [class.completed]="task.completed">
+          {{ task.title }}
+          <!-- Shared Indicator -->
+          <ion-icon name="people" color="tertiary" class="shared-icon" *ngIf="task.sharedWith && task.sharedWith.length > 0"></ion-icon>
+        </div>
+        
+        <div class="task-meta">
+          <!-- Enhanced Category Chip -->
+          <ion-chip class="category-chip-task" [style.--chip-color]="getCategoryColor(task.category)">
+            <ion-icon [name]="getCategoryIcon(task.category)"></ion-icon>
+            <ion-label>{{ getCategoryName(task.category) }}</ion-label>
+          </ion-chip>
+          
+          <!-- Enhanced Priority Chip -->
+          <ion-chip class="priority-chip" [attr.data-priority]="task.priority">
+            <span class="priority-text">{{ task.priority.toUpperCase() }}</span>
+          </ion-chip>
+        </div>
+      </div>
+      
+      <!-- Enhanced Description with Read More -->
+      <div class="task-description" *ngIf="task.description" [class.completed]="task.completed">
+        <div class="description-text" [class.truncated]="!task.expanded && task.description.length > 100">
+          {{ task.expanded || task.description.length <= 100 ? task.description : (task.description | slice:0:100) + '...' }}
+        </div>
+        <ion-button 
+          fill="clear" 
+          size="small" 
+          *ngIf="task.description.length > 100"
+          (click)="toggleTaskExpansion(task, $event)">
+          {{ task.expanded ? 'Show Less' : 'Read More' }}
+        </ion-button>
+      </div>
+
+      <!-- Subtasks Progress -->
+      <div class="subtasks-progress" *ngIf="task.subtasks && task.subtasks.length > 0">
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="getSubtaskProgress(task)"></div>
+        </div>
+        <span class="progress-text">
+          {{ getCompletedSubtasks(task) }}/{{ task.subtasks.length }} subtasks
+        </span>
+      </div>
+      
+      <!-- Enhanced Task Details with Better Icons -->
+      <div class="task-details">
+        <div class="detail-item created">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <span>{{ task.createdAt | date:'MMM d' }}</span>
+        </div>
+        
+        <div class="detail-item due-date" *ngIf="task.dueDate" [class.overdue]="isOverdue(task)">
+          <ion-icon [name]="isOverdue(task) ? 'alert-circle' : 'time-outline'" 
+                    [color]="isOverdue(task) ? 'danger' : 'medium'"></ion-icon>
+          <span>Due {{ task.dueDate | date:'MMM d' }}</span>
+          <span *ngIf="task.dueTime" class="due-time">{{ formatTime(task.dueTime) }}</span>
+        </div>
+        
+        <div class="detail-item estimated-time" *ngIf="task.estimatedTime">
+          <ion-icon name="timer-outline"></ion-icon>
+          <span>{{ task.estimatedTime }}min</span>
+        </div>
+        
+        <div class="detail-item actual-time" *ngIf="task.timeSpent">
+          <ion-icon name="stopwatch-outline" color="success"></ion-icon>
+          <span>{{ task.timeSpent }}min actual</span>
+        </div>
+        
+        <div class="detail-item reminder" *ngIf="task.reminderSet">
+          <ion-icon name="notifications" color="warning"></ion-icon>
+          <span>Reminder set</span>
+        </div>
+        
+        <div class="detail-item shared" *ngIf="task.sharedWith && task.sharedWith.length > 0">
+          <ion-icon name="people" color="tertiary"></ion-icon>
+          <span>{{ task.sharedWith.length }} collaborator{{ task.sharedWith.length > 1 ? 's' : '' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enhanced Task Actions -->
+    <div class="task-actions">
+      <!-- Quick Complete Button -->
+      <ion-button 
+        fill="clear" 
+        size="small"
+        [color]="task.completed ? 'success' : 'medium'"
+        (click)="toggleTask(task)">
+        <ion-icon [name]="task.completed ? 'checkmark-circle' : 'checkmark-circle-outline'"></ion-icon>
+      </ion-button>
+      
+      <!-- Share Button -->
+      <ion-button 
+        fill="clear" 
+        size="small"
+        color="tertiary"
+        (click)="shareTask(task)">
+        <ion-icon name="share-outline"></ion-icon>
+      </ion-button>
+      
+      <!-- Edit Button -->
+      <ion-button 
+        fill="clear" 
+        size="small"
+        color="primary"
+        (click)="editTask(task)">
+        <ion-icon name="create-outline"></ion-icon>
+      </ion-button>
+
+      <!-- Duplicate Button -->
+      <ion-button 
+        fill="clear" 
+        size="small"
+        color="secondary"
+        (click)="duplicateTask(task)">
+        <ion-icon name="copy-outline"></ion-icon>
+      </ion-button>
+
+      <!-- Delete Button -->
+      <ion-button 
+        fill="clear" 
+        size="small"
+        color="danger"
+        (click)="deleteTask(task)">
+        <ion-icon name="trash-outline"></ion-icon>
+      </ion-button>
+
+      <!-- More Actions Menu -->
+      <ion-button 
+        fill="clear" 
+        size="small"
+        color="medium"
+        (click)="showMoreActions(task, $event)">
+        <ion-icon name="ellipsis-vertical"></ion-icon>
+      </ion-button>
+    </div>
+  </ng-template>
+
+  <!-- Enhanced Floating Action Menu -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="custom-fab">
+    <ion-fab-button class="main-fab" [class.rotated]="fabOpen">
+      <ion-icon [name]="fabOpen ? 'close' : 'add'"></ion-icon>
+    </ion-fab-button>
+    
+    <ion-fab-list side="top" [class.visible]="fabOpen">
+      <ion-fab-button color="success" (click)="quickAddTask('personal')" title="Personal Task">
+        <ion-icon name="person"></ion-icon>
+      </ion-fab-button>
+      
+      <ion-fab-button color="warning" (click)="quickAddTask('work')" title="Work Task">
+        <ion-icon name="briefcase"></ion-icon>
+      </ion-fab-button>
+      
+      <ion-fab-button color="tertiary" (click)="quickAddTask('shopping')" title="Shopping Task">
+        <ion-icon name="basket"></ion-icon>
+      </ion-fab-button>
+      
+      <ion-fab-button color="secondary" (click)="importTasks()" title="Import Tasks">
+        <ion-icon name="download"></ion-icon>
+      </ion-fab-button>
+      
+      <ion-fab-button color="medium" (click)="exportTasks()" title="Export Tasks">
+        <ion-icon name="share"></ion-icon>
+      </ion-fab-button>
+    </ion-fab-list>
+  </ion-fab>
+
+  <!-- Bulk Selection Toolbar -->
+  <div class="bulk-toolbar" *ngIf="bulkSelectionMode && selectedTasks.length > 0" [@slideUp]>
+    <div class="selection-info">
+      <span>{{ selectedTasks.length }} selected</span>
+    </div>
+    <div class="bulk-actions">
+      <ion-button fill="clear" (click)="bulkComplete()">
+        <ion-icon name="checkmark-done"></ion-icon>
+        Complete
+      </ion-button>
+      <ion-button fill="clear" (click)="bulkSetCategory()">
+        <ion-icon name="folder"></ion-icon>
+        Category
+      </ion-button>
+      <ion-button fill="clear" (click)="bulkSetPriority()">
+        <ion-icon name="flag"></ion-icon>
+        Priority
+      </ion-button>
+      <ion-button fill="clear" (click)="bulkShare()">
+        <ion-icon name="share"></ion-icon>
+        Share
+      </ion-button>
+      <ion-button fill="clear" color="danger" (click)="bulkDelete()">
+        <ion-icon name="trash"></ion-icon>
+        Delete
+      </ion-button>
+      <ion-button fill="clear" (click)="exitBulkSelection()">
+        <ion-icon name="close"></ion-icon>
       </ion-button>
     </div>
   </div>
-
-  <!-- Tasks List -->
-  <div class="tasks-section">
-    <div *ngIf="tasks.length === 0" class="empty-state">
-      <ion-icon name="checkmark-circle-outline" class="empty-icon"></ion-icon>
-      <h3>🎉 All caught up!</h3>
-      <p>You have no tasks pending. Time to add some goals and crush them!</p>
-    </div>
-
-    <div class="tasks-list" *ngIf="tasks.length > 0">
-      <div 
-        *ngFor="let task of tasks; trackBy: trackByTaskId" 
-        class="task-item"
-        [class.completed]="task.completed"
-        [class.task-enter]="task.isNew"
-        [class.task-exit]="task.isDeleting">
-        
-        <div class="task-checkbox-container">
-          <div 
-            class="task-checkbox"
-            [class.checked]="task.completed"
-            (click)="toggleTask(task)">
-            <ion-icon 
-              name="checkmark" 
-              *ngIf="task.completed"
-              class="check-icon">
-            </ion-icon>
-          </div>
-        </div>
-
-        <div class="task-content">
-          <div class="task-text" [class.completed]="task.completed">
-            {{ task.text }}
-          </div>
-          <div class="task-time">{{ task.createdAt | date:'short' }}</div>
-        </div>
-
-        <ion-button 
-          fill="clear" 
-          size="small"
-          class="delete-button"
-          (click)="deleteTask(task)">
-          <ion-icon name="trash-outline"></ion-icon>
-        </ion-button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Floating Action Button (Alternative) -->
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="custom-fab">
-    <ion-fab-button class="fab-button" (click)="scrollToTop()">
-      <ion-icon name="arrow-up"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
 
 </ion-content>
